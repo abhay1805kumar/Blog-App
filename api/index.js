@@ -14,19 +14,21 @@ const fs = require('fs');
 const salt = bcrypt.genSaltSync(10);
 const secret = 'asdfe45we45w345wegw345werjktjwertkj';
 
-// ✅ CORS fix (VERY IMPORTANT)
+// ✅ CORS FIX
 app.use(cors({
   credentials: true,
   origin: [
     "http://localhost:3000",
     "https://blog-app-three-smoky.vercel.app",
-    "https://blog-app-qx3lglwqg-abhay1805kumars-projects.vercel.app"
+    "https://blog-app-qx3lglwqg-abhay1805kumars-projects.vercel.app",
+    "https://blog-app-git-main-abhay1805kumars-projects.vercel.app"
   ]
 }));
 
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
+
 app.get("/", (req,res)=>{
   res.send("API running");
 });
@@ -34,48 +36,64 @@ app.get("/", (req,res)=>{
 // ✅ MongoDB
 mongoose.connect(process.env.MONGO_URL);
 
-// ================= AUTH =================
 
+// ================= REGISTER =================
 app.post('/register', async (req,res) => {
   const {username,password} = req.body;
+
   try{
     const userDoc = await User.create({
       username,
       password:bcrypt.hashSync(password,salt),
     });
+
     res.json(userDoc);
+
   } catch(e) {
     console.log(e);
     res.status(400).json(e);
   }
 });
 
+
+// ================= LOGIN =================
 app.post('/login', async (req,res) => {
   const {username,password} = req.body;
+
   const userDoc = await User.findOne({username});
+
+  // ✅ FIX crash
+  if (!userDoc) {
+    return res.status(400).json('user not found');
+  }
+
   const passOk = bcrypt.compareSync(password, userDoc.password);
 
   if (passOk) {
     jwt.sign({username,id:userDoc._id}, secret, {}, (err,token) => {
       if (err) throw err;
 
-      // ✅ cookie fix for deploy
       res.cookie('token', token, {
         httpOnly: true,
         secure: true,
-        sameSite: "none"
+        sameSite: "none",
+        path: "/"
       }).json({
         id:userDoc._id,
         username,
       });
     });
+
   } else {
     res.status(400).json('wrong credentials');
   }
 });
 
+
+// ================= PROFILE =================
 app.get('/profile', (req,res) => {
   const {token} = req.cookies;
+
   if (!token) return res.json(null);
 
   jwt.verify(token, secret, {}, (err,info) => {
@@ -84,25 +102,31 @@ app.get('/profile', (req,res) => {
   });
 });
 
+
+// ================= LOGOUT =================
 app.post('/logout', (req,res) => {
   res.cookie('token', '', {
     httpOnly: true,
     secure: true,
-    sameSite: "none"
+    sameSite: "none",
+    path: "/"
   }).json('ok');
 });
 
-// ================= POSTS =================
 
+// ================= CREATE POST =================
 app.post('/post', uploadMiddleware.single('file'), async (req,res) => {
+
   const {originalname,path} = req.file;
   const ext = originalname.split('.').pop();
   const newPath = path+'.'+ext;
+
   fs.renameSync(path, newPath);
 
   const {token} = req.cookies;
 
   jwt.verify(token, secret, {}, async (err,info) => {
+
     if (err) return res.status(401).json("Unauthorized");
 
     const {title,summary,content} = req.body;
@@ -119,26 +143,32 @@ app.post('/post', uploadMiddleware.single('file'), async (req,res) => {
   });
 });
 
+
+// ================= UPDATE POST =================
 app.put('/post', uploadMiddleware.single('file'), async (req,res) => {
+
   let newPath = null;
 
   if (req.file) {
     const {originalname,path} = req.file;
     const ext = originalname.split('.').pop();
     newPath = path+'.'+ext;
+
     fs.renameSync(path, newPath);
   }
 
   const {token} = req.cookies;
 
   jwt.verify(token, secret, {}, async (err,info) => {
+
     if (err) return res.status(401).json("Unauthorized");
 
     const {id,title,summary,content} = req.body;
 
     const postDoc = await Post.findById(id);
 
-    const isAuthor = JSON.stringify(postDoc.author) === JSON.stringify(info.id);
+    const isAuthor =
+      JSON.stringify(postDoc.author) === JSON.stringify(info.id);
 
     if (!isAuthor) {
       return res.status(400).json('you are not the author');
@@ -155,6 +185,8 @@ app.put('/post', uploadMiddleware.single('file'), async (req,res) => {
   });
 });
 
+
+// ================= GET POSTS =================
 app.get('/post', async (req,res) => {
   res.json(
     await Post.find()
@@ -164,13 +196,20 @@ app.get('/post', async (req,res) => {
   );
 });
 
+
+// ================= SINGLE POST =================
 app.get('/post/:id', async (req, res) => {
   const {id} = req.params;
-  const postDoc = await Post.findById(id).populate('author', ['username']);
+
+  const postDoc = await Post
+    .findById(id)
+    .populate('author', ['username']);
+
   res.json(postDoc);
 });
 
-// ✅ PORT fix
+
+// ================= PORT =================
 app.listen(process.env.PORT || 4000, () => {
   console.log("Server running...");
 });
