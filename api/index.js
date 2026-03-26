@@ -27,6 +27,9 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
+app.get("/", (req,res)=>{
+  res.send("API running");
+});
 
 // ✅ MongoDB
 mongoose.connect(process.env.MONGO_URL);
