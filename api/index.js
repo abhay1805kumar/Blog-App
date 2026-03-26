@@ -14,13 +14,14 @@ const fs = require('fs');
 const salt = bcrypt.genSaltSync(10);
 const secret = 'asdfe45we45w345wegw345werjktjwertkj';
 
-app.use(cors({credentials:true,origin:'http://localhost:3000'}));
+app.use(cors({credentials:true,origin:true}));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
 // mongoose.connect("mongodb+srv://blog:1abc@cluster0.hfa0l0f.mongodb.net/?retryWrites=true&w=majority");
-mongoose.connect("mongodb+srv://abhayguptaiitg45_db_user:VASatdtRzWpvl11C@cluster0.nxdcuq8.mongodb.net/blog?retryWrites=true&w=majority")
+// mongoose.connect("mongodb+srv://abhayguptaiitg45_db_user:VASatdtRzWpvl11C@cluster0.nxdcuq8.mongodb.net/blog?retryWrites=true&w=majority")
+mongoose.connect(process.env.MONGO_URL);
 
 app.post('/register', async (req,res) => {
   const {username,password} = req.body;
@@ -135,4 +136,4 @@ app.get('/post/:id', async (req, res) => {
   res.json(postDoc);
 })
 
-app.listen(4000);
+app.listen(process.env.PORT || 4000);
