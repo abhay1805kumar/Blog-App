@@ -1,0 +1,39 @@
+.loginHeader {
+  background: linear-gradient(
+    to top right,
+    #421fae,
+    #4000ff,
+    #9c539d,
+    #c24b83,
+    #e74c61
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.welcome {
+  font-size: 60px;
+  font-weight: bold;
+  background: linear-gradient(
+    to right,
+    #e39f0b,
+    #c3a020,
+    #b2b436,
+    #c0d710,
+    #cee80a
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.exploreHead {
+    font-size: 60px;
+    font-weight: bold;
+    background: linear-gradient(
+      to right,
+      #0b70e3,
+      #245bad,
+      #373e94,
+      #607da0
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }

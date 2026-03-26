@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* dark theme base */
+body{
+  @apply bg-zinc-900 text-zinc-200;
+}
+
+/* navbar */
+.navbar{
+  @apply bg-zinc-950 border-b border-zinc-800;
+}
+
+/* buttons */
+.btn{
+  @apply px-4 py-2 rounded-lg bg-zinc-800 text-white hover:bg-zinc-700 transition;
+}
+
+/* primary button (Create Post) */
+.btn-primary{
+  @apply px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition;
+}
